@@ -19,12 +19,12 @@ module.exports = async function (req, res, pathFile) {
       const contentType = mime(pathFile);
       res.statusCode = 200;
       res.setHeader('Content-Type', contentType);
-      // let rs = fs.createReadStream(filePath);
-      // if (filePath.match(config.compress)) {
-      //     rs = compress(rs, req, res);
-      //   }
-      fs.createReadStream(pathFile).pipe(res); 
-      // rs.pipe(res);
+      let rs = fs.createReadStream(pathFile);
+      if (pathFile.match(config.compress)) {
+          rs = compress(rs, req, res);
+        }
+      // fs.createReadStream(pathFile).pipe(res); 
+      rs.pipe(res);
     } else if (stats.isDirectory()) {
       const files = await readdir(pathFile);
       res.statusCode = 200;
@@ -39,8 +39,6 @@ module.exports = async function (req, res, pathFile) {
             icon: mime(file)
           }
         })
-        
-          
       };
       // res.end(files.join(','));
       res.end(template(data));
