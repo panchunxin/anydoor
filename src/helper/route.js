@@ -7,6 +7,7 @@ const readdir = promisify(fs.readdir);
 const config = require('../config/defaultConfig');
 const mime = require('./mime');
 const compress = require('./compress');
+const range = require('./range');
 
 
 const tplpath = path.join(__dirname, '../template/dir.tpl');
@@ -19,7 +20,16 @@ module.exports = async function (req, res, pathFile) {
       const contentType = mime(pathFile);
       res.statusCode = 200;
       res.setHeader('Content-Type', contentType);
-      let rs = fs.createReadStream(pathFile);
+      let rs;
+      const {code, res, req} = range(stats.size, req, res);
+      //处理不了
+      if (code === 200) {
+        res.statusCode == 200;
+        rs = fs.createReadStream(pathFile);
+      } else {//成功读到指定范围的内容
+        res.statusCode == 206;
+        rs = fs.createReadStream(pathFile, {start, end});//第二个参数是options == {start: start, end: end}
+      }
       if (pathFile.match(config.compress)) {
           rs = compress(rs, req, res);
         }
